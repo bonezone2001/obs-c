@@ -37,6 +37,7 @@ public:
     Capture(const std::string& windowName);
 
     void attach();
+    void shutdown();
     std::tuple<std::vector<uint8_t>, std::pair<size_t, size_t>> captureFrame();
 
 private:

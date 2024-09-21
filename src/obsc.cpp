@@ -48,10 +48,10 @@ void Capture::attach()
     initEvents();
 
     // Create and signal the hook init event
-    if (!context.hookInit.signal()) throw std::runtime_error(fmt::format("Failed to signal the hook init event ({})", GetLastError()));
+    if (!context.hookInit->signal()) throw std::runtime_error(fmt::format("Failed to signal the hook init event ({})", GetLastError()));
 
     // Wait for the hook to signal the ready event
-    if (!context.hookReady.signalled()) context.hookReady.wait();
+    if (!context.hookReady->signalled()) context.hookReady->wait();
 
     // // Extract data from the shared memory
     auto hookInfo = FileMapping<HookInfo>::open(fmt::format("{}{}", SHMEM_HOOK_INFO, context.pid));
@@ -72,10 +72,38 @@ void Capture::attach()
     PRINTLN("Hook ready. Texture handle: {}. Capture Mode: {}", context.textureHandle, hookInfo->type == CaptureType::Memory ? "Memory" : "Texture");
 }
 
+void Capture::shutdown()
+{
+    // Signal the stop event & wait for the hook to exit
+    if (context.hookStop && !context.hookStop->signal()) PRINTLN("Failed to signal the stop event: {}", GetLastError());
+    if (context.hookExit) context.hookExit->wait();
+
+    // Cleanup
+    context.hookRestart.reset();
+    context.hookStop.reset();
+    context.hookInit.reset();
+    context.hookReady.reset();
+    context.hookExit.reset();
+
+    context.keepaliveMutex.reset();
+    context.pipe.reset();
+
+    context.textureMutex1.reset();
+    context.textureMutex2.reset();
+
+    context.device.Reset();
+    context.deviceContext.Reset();
+    context.resource.Reset();
+
+    context.surface.Reset();
+
+    PRINTLN("Capture shutdown complete.");
+}
+
 std::tuple<std::vector<uint8_t>, std::pair<size_t, size_t>> Capture::captureFrame()
 {
     // Restart the capture if the event is signalled
-    if (context.hookRestart.signalled()) {
+    if (context.hookRestart->signalled()) {
         PRINTLN("The restart event has been signalled. Restarting the capture.");
         attach();
     }
@@ -134,21 +162,29 @@ void Capture::initTextureMutexes()
 
 void Capture::initEvents()
 {
+    // Create the events
+    context.hookRestart = std::make_unique<Event>();
+    context.hookStop = std::make_unique<Event>();
+    context.hookInit = std::make_unique<Event>();
+    context.hookReady = std::make_unique<Event>();
+    context.hookExit = std::make_unique<Event>();
+
+    // Open the events
     char name[64];
     sprintf_s(name, "%s%lu", EVENT_CAPTURE_RESTART, context.pid);
-    context.hookRestart.openInline(name);
+    context.hookRestart->openInline(name);
 
     sprintf_s(name, "%s%lu", EVENT_CAPTURE_STOP, context.pid);
-    context.hookStop.openInline(name);
+    context.hookStop->openInline(name);
 
     sprintf_s(name, "%s%lu", EVENT_HOOK_INIT, context.pid);
-    context.hookInit.openInline(name);
+    context.hookInit->openInline(name);
 
     sprintf_s(name, "%s%lu", EVENT_HOOK_READY, context.pid);
-    context.hookReady.openInline(name);
+    context.hookReady->openInline(name);
 
     sprintf_s(name, "%s%lu", EVENT_HOOK_EXIT, context.pid);
-    context.hookExit.openInline(name);
+    context.hookExit->openInline(name);
 }
 
 void Capture::initHookInfo()

@@ -38,11 +38,11 @@ struct OBSC_EXPORT Context {
     std::unique_ptr<Mutex> textureMutex2;
     std::unique_ptr<NamedPipe> pipe;
 
-    Event hookRestart;
-    Event hookStop;
-    Event hookInit;
-    Event hookReady;
-    Event hookExit;
+    std::unique_ptr<Event> hookRestart;
+    std::unique_ptr<Event> hookStop;
+    std::unique_ptr<Event> hookInit;
+    std::unique_ptr<Event> hookReady;
+    std::unique_ptr<Event> hookExit;
 
     ComPtr<ID3D11Device> device;
     ComPtr<ID3D11DeviceContext> deviceContext;
