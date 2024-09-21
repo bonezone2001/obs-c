@@ -7,7 +7,6 @@ namespace obsc {
 
 Event::~Event()
 {
-    PRINTLN("Dropping the event");
     if (handle != NULL)
         CloseHandle(handle);
 }

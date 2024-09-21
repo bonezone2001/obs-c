@@ -5,7 +5,6 @@ namespace obsc {
 
 Mutex::~Mutex()
 {
-    PRINTLN("Dropping the mutex");
     if (handle != nullptr) {
         CloseHandle(handle);
     }
