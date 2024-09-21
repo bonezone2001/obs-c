@@ -25,6 +25,8 @@ inject-helper64.exe
 
 These can be obtained by navigating to `%programfiles%\obs-studio\data\obs-plugins\win-capture`. This may of course be different for you. However, the general structure still holds true. You may not need both 32 and 64 bit, if you know the application you're capturing and it's bitness.
 
+Once you have the files, place them alongside exe you make. At application root.
+
 <!-- USAGE EXAMPLES -->
 ## Usage and Examples
 
