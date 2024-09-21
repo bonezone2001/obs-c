@@ -9,7 +9,7 @@
 #pragma once
 #include <fmt/core.h>
 
-// #define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 #include <fmt/core.h>
