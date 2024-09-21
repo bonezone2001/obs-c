@@ -62,6 +62,8 @@ Don't forget to give the project a star! Mwah!
 ## Acknowledgements
 
 https://github.com/not-matthias/obs-rs/tree/main
+https://github.com/ToruNiina/toml11
+https://github.com/fmtlib/fmt
 
 <!-- LICENSE -->
 ## License
